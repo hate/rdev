@@ -1,3 +1,4 @@
+#![allow(unused_unsafe)]
 use objc2_core_graphics::{CGDisplayPixelsHigh, CGDisplayPixelsWide, CGMainDisplayID};
 
 use crate::rdev::DisplayError;

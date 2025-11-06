@@ -1,6 +1,6 @@
 [package]
 name = "rdev"
-version = "0.6.0"
+version = "0.5.3"
 authors = ["Nicolas Patry <patry.nicolas@protonmail.com>"]
 edition = "2024"
 
@@ -19,7 +19,11 @@ lazy_static = "1.4"
 serde_json = { version = "1.0", optional = true }
 
 [features]
-default = []
+# Enable key_names by default for parity with upstream, but allow consumers
+# (like keyless) to disable it cleanly to avoid macOS HIToolbox/TIS calls
+# from the CGEvent tap thread.
+default = ["key_names"]
+key_names = []
 serialize = ["serde"]
 unstable_grab = ["evdev-rs", "epoll", "inotify", "dep:serde_json", "serialize"]
 wayland = ["input", "input-linux", "xkbcommon"]

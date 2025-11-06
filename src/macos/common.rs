@@ -24,7 +24,7 @@ pub fn set_is_main_thread(b: bool) {
 pub unsafe fn convert(
     _type: CGEventType,
     cg_event: NonNull<CGEvent>,
-    keyboard_state: &mut Keyboard,
+    _keyboard_state: &mut Keyboard,
 ) -> Option<Event> {
     unsafe {
         let option_type = match _type {
@@ -173,17 +173,19 @@ pub unsafe fn convert(
             }
         };
         if let Some(event_type) = option_type {
-            let name = match event_type {
-                EventType::KeyPress(_) => {
-                    let code = CGEvent::integer_value_field(
-                        Some(cg_event.as_ref()),
-                        CGEventField::KeyboardEventKeycode,
-                    );
-                    let flags = CGEvent::flags(Some(cg_event.as_ref()));
-                    keyboard_state.create_string_for_key(code, flags)
-                }
-                _ => None,
-            };
+            // Optionally generate key names only when the rdev `key_names` feature is enabled.
+            // We keep it disabled in our app to avoid HIToolbox/TIS from the tap thread.
+            #[allow(unused_mut)]
+            let mut name = None;
+            #[cfg(feature = "key_names")]
+            if matches!(event_type, EventType::KeyPress(_)) {
+                let code = CGEvent::integer_value_field(
+                    Some(cg_event.as_ref()),
+                    CGEventField::KeyboardEventKeycode,
+                );
+                let flags = CGEvent::flags(Some(cg_event.as_ref()));
+                name = keyboard_state.create_string_for_key(code, flags);
+            }
             return Some(Event {
                 event_type,
                 time: SystemTime::now(),
